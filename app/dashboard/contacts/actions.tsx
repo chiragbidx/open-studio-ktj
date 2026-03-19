@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { db } from "@/lib/db/client";
-import { contacts } from "@/lib/db/schema";
+import { contacts, teamMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getAuthSession } from "@/lib/auth/session";
 
@@ -19,6 +19,15 @@ const createContactSchema = z.object({
 const updateContactSchema = createContactSchema.extend({
   id: z.string().min(1)
 });
+
+async function getUserTeamId(userId: string) {
+  const [memberRow] = await db
+    .select()
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, userId))
+    .limit(1);
+  return memberRow?.teamId ?? null;
+}
 
 export async function createContactAction(formData: FormData) {
   const input = createContactSchema.safeParse({
@@ -37,12 +46,7 @@ export async function createContactAction(formData: FormData) {
   const session = await getAuthSession();
   if (!session) return { error: { auth: ["Not authenticated"] } };
 
-  // Team context from server session, ensure user is a member
-  // For now, assume user has one team (multi-team can extend this logic)
-  const memberRow = await db.query.teamMembers.findFirst({
-    where: eq("user_id", session.userId)
-  });
-  const teamId = memberRow?.team_id;
+  const teamId = await getUserTeamId(session.userId);
 
   if (!teamId) return { error: { auth: ["User is not on a team"] } };
 
@@ -74,10 +78,7 @@ export async function updateContactAction(formData: FormData) {
   const session = await getAuthSession();
   if (!session) return { error: { auth: ["Not authenticated"] } };
 
-  const memberRow = await db.query.teamMembers.findFirst({
-    where: eq("user_id", session.userId)
-  });
-  const teamId = memberRow?.team_id;
+  const teamId = await getUserTeamId(session.userId);
 
   if (!teamId) return { error: { auth: ["User is not on a team"] } };
 
@@ -105,10 +106,7 @@ export async function deleteContactAction(formData: FormData) {
   const session = await getAuthSession();
   if (!session) return { error: { auth: ["Not authenticated"] } };
 
-  const memberRow = await db.query.teamMembers.findFirst({
-    where: eq("user_id", session.userId)
-  });
-  const teamId = memberRow?.team_id;
+  const teamId = await getUserTeamId(session.userId);
 
   if (!teamId) return { error: { auth: ["User is not on a team"] } };
 
