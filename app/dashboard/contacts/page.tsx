@@ -11,14 +11,16 @@ export default async function ContactsPage() {
   const session = await getAuthSession();
   if (!session) redirect("/auth#signin");
 
-  // For now, use first team for user (personal/team-tenant model)
-  const memberRow = await db.query.teamMembers.findFirst({
-    where: eq("user_id", session.userId)
-  });
+  // Find the user's team membership
+  const [memberRow] = await db
+    .select()
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, session.userId))
+    .limit(1);
 
   if (!memberRow) redirect("/dashboard/team");
 
-  const teamId = memberRow.team_id;
+  const teamId = memberRow.teamId;
 
   const contactList = await db
     .select()
