@@ -3,6 +3,8 @@ import "server-only";
 import { pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
+// Existing tables...
+
 export const users = pgTable("users", {
   id: text("id")
     .notNull()
@@ -106,6 +108,29 @@ export const featureItems = pgTable("feature_items", {
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
   status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// New CRUD feature: Contacts
+export const contacts = pgTable("contacts", {
+  id: text("id")
+    .notNull()
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
+  teamId: text("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull().default(""),
+  company: text("company").notNull().default(""),
+  notes: text("notes").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
