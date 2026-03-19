@@ -28,3 +28,7 @@
   - UX follows RelateCRM and team model conventions
   - No open API keys or public unprotected endpoints
 - Updated CHANGELOG.md accordingly.
+
+## 2026-03-20
+- Fixed critical bug: replaced the use of `db.query.teamMembers.findFirst` (not supported) with correct Drizzle ORM select call in contacts CRUD server/page logic.
+- Updated: `app/dashboard/contacts/page.tsx`, `app/dashboard/contacts/actions.tsx`.
