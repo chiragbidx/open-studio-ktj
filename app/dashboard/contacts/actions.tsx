@@ -39,9 +39,10 @@ export async function createContactAction(formData: FormData) {
 
   // Team context from server session, ensure user is a member
   // For now, assume user has one team (multi-team can extend this logic)
-  const teamId = await db.query.teamMembers.findFirst({
+  const memberRow = await db.query.teamMembers.findFirst({
     where: eq("user_id", session.userId)
-  }).then(row => row?.team_id);
+  });
+  const teamId = memberRow?.team_id;
 
   if (!teamId) return { error: { auth: ["User is not on a team"] } };
 
@@ -73,10 +74,10 @@ export async function updateContactAction(formData: FormData) {
   const session = await getAuthSession();
   if (!session) return { error: { auth: ["Not authenticated"] } };
 
-  // Team restriction
-  const teamId = await db.query.teamMembers.findFirst({
+  const memberRow = await db.query.teamMembers.findFirst({
     where: eq("user_id", session.userId)
-  }).then(row => row?.team_id);
+  });
+  const teamId = memberRow?.team_id;
 
   if (!teamId) return { error: { auth: ["User is not on a team"] } };
 
@@ -104,9 +105,10 @@ export async function deleteContactAction(formData: FormData) {
   const session = await getAuthSession();
   if (!session) return { error: { auth: ["Not authenticated"] } };
 
-  const teamId = await db.query.teamMembers.findFirst({
+  const memberRow = await db.query.teamMembers.findFirst({
     where: eq("user_id", session.userId)
-  }).then(row => row?.team_id);
+  });
+  const teamId = memberRow?.team_id;
 
   if (!teamId) return { error: { auth: ["User is not on a team"] } };
 
