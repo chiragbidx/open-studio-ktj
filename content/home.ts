@@ -22,4 +22,6 @@ const relateCrmHomeContent = {
   footerText: "© 2024 RelateCRM. All rights reserved."
 };
 
+// Provide both default and named export for compatibility
 export default relateCrmHomeContent;
+export const homeContent = relateCrmHomeContent;
