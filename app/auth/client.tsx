@@ -1,9 +1,7 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useMemo, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,43 +12,23 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import {
   type AuthActionState,
   signInWithPassword,
   signUpWithPassword,
 } from "./actions";
-
-// Purpose: Client UI for /auth.
-// Use this file for auth mode toggles, form interactivity, and browser-only logic.
-//
-// Replication pattern for new interactive pages:
-// - Keep server mutations in `actions.ts`.
-// - Bind actions here with `useActionState`.
-// - Use local state only for presentation/interaction (tabs, steps, toggles).
-// - Keep forms simple: collect inputs and submit to a server action.
-
 type AuthMode = "signin" | "signup";
-
 type ClientProps = {
   redirectTo: string;
   flashStatus: "success" | "error" | null;
   flashMessage: string | null;
 };
-
 const initialActionState: AuthActionState = {
   status: "idle",
   message: "",
 };
-
 export default function Client({ redirectTo, flashStatus, flashMessage }: ClientProps) {
-  // UI state: only controls which form is shown.
   const [mode, setMode] = useState<AuthMode>("signin");
-
-  // Server action wiring:
-  // - `state` carries serializable feedback (error/success message).
-  // - `action` is assigned directly to form `action={...}`.
-  // - `pending` drives submit button loading state.
   const [signInState, signInAction, signInPending] = useActionState(
     signInWithPassword,
     initialActionState
@@ -59,52 +37,61 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
     signUpWithPassword,
     initialActionState
   );
-
   const activeState = mode === "signin" ? signInState : signUpState;
   const isPending = mode === "signin" ? signInPending : signUpPending;
-
   useEffect(() => {
     if (activeState._devUrl) {
       console.log(`[Dev] Auth link → ${activeState._devUrl}`);
     }
   }, [activeState._devUrl]);
-
-  // URL hash keeps the auth mode linkable (`/auth#signin` or `/auth#signup`).
   useEffect(() => {
     const syncFromHash = () => {
       const hash = window.location.hash.replace("#", "").toLowerCase();
       setMode(hash === "signup" ? "signup" : "signin");
     };
-
     syncFromHash();
     window.addEventListener("hashchange", syncFromHash);
     return () => window.removeEventListener("hashchange", syncFromHash);
   }, []);
-
   const setModeWithHash = (nextMode: AuthMode) => {
     setMode(nextMode);
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `#${nextMode}`);
     }
   };
-
   const content = useMemo(() => {
-    // View-model for mode-specific heading/description copy.
     if (mode === "signup") {
       return {
         id: "signup",
-        title: "Create account",
-        description: "Start your free account in less than a minute.",
+        title: "Welcome to RelateCRM",
+        description: "Join your team and start managing customer relationships.",
+        button: "Create Account",
+        helper: (
+          <span>
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setModeWithHash("signin")}
+              className="underline hover:text-primary transition"
+            >
+              Sign in.
+            </button>
+          </span>
+        ),
       };
     }
-
     return {
       id: "signin",
-      title: "Sign in",
-      description: "Use your email and password to continue.",
+      title: "Sign in to RelateCRM",
+      description: "Access your team’s CRM dashboard.",
+      button: "Sign In",
+      helper: (
+        <span>
+          Don&apos;t have an account? Request an invite from your administrator.
+        </span>
+      ),
     };
   }, [mode]);
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_hsl(var(--primary)/0.18),_transparent_45%),linear-gradient(to_bottom,_hsl(var(--background)),_hsl(var(--muted)/0.45))] px-6 py-10 sm:px-10 lg:px-16 lg:py-14">
       <section className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-secondary bg-card/60 shadow-2xl backdrop-blur-sm lg:grid-cols-2">
@@ -113,21 +100,19 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
           <div className="relative z-10 flex h-full flex-col justify-between">
             <div className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">
-                Panda Access
+                RelateCRM Access
               </p>
               <h1 className="max-w-sm text-4xl font-semibold leading-tight tracking-tight">
-                Launch faster with one workspace for your team.
+                Centralize, connect, and act on every customer relationship.
               </h1>
               <p className="max-w-md text-sm text-muted-foreground">
-                Secure auth, polished interface, and a clean onboarding flow built
-                for production teams.
+                Secure CRM, collaborative dashboard, and an onboarding flow built for productive teams.
               </p>
             </div>
-
             <div className="relative overflow-hidden rounded-2xl border border-secondary/70 bg-background/80 p-3 shadow-lg">
               <Image
                 src="/demo-img.jpg"
-                alt="Panda product preview"
+                alt="RelateCRM product preview"
                 className="h-full w-full rounded-xl object-cover"
                 width={1200}
                 height={900}
@@ -135,7 +120,6 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
             </div>
           </div>
         </aside>
-
         <div className="flex min-h-[720px] items-center justify-center p-4 sm:p-8 lg:p-10">
           <Card id={content.id} className="w-full max-w-md border-secondary/70 shadow-xl">
             <CardHeader className="space-y-4">
@@ -163,13 +147,11 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                   Sign up
                 </button>
               </div>
-
               <div className="space-y-1">
                 <CardTitle>{content.title}</CardTitle>
                 <CardDescription>{content.description}</CardDescription>
               </div>
             </CardHeader>
-
             <CardContent className="space-y-6">
               {flashStatus && flashMessage ? (
                 <div
@@ -182,9 +164,7 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                   {flashMessage}
                 </div>
               ) : null}
-
               {mode === "signin" ? (
-                // Sign-in form submits directly to server action.
                 <form className="space-y-4" action={signInAction}>
                   {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
                   <div className="space-y-2">
@@ -197,7 +177,6 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                       required
                     />
                   </div>
-
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="signin-password">Password</Label>
@@ -213,13 +192,11 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                       required
                     />
                   </div>
-
                   <Button type="submit" className="w-full" disabled={isPending}>
-                    {isPending ? "Signing in..." : "Sign in"}
+                    {isPending ? "Signing in..." : content.button}
                   </Button>
                 </form>
               ) : (
-                // Sign-up form submits directly to server action.
                 <form className="space-y-4" action={signUpAction}>
                   {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -232,7 +209,6 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                       <Input id="signup-last-name" name="lastName" placeholder="Dodiya" required />
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
@@ -243,7 +219,6 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                       required
                     />
                   </div>
-
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="signup-password">Password</Label>
@@ -266,24 +241,22 @@ export default function Client({ redirectTo, flashStatus, flashMessage }: Client
                       />
                     </div>
                   </div>
-
                   <Button type="submit" className="w-full" disabled={isPending}>
-                    {isPending ? "Creating account..." : "Create account"}
+                    {isPending ? "Creating account..." : content.button}
                   </Button>
                 </form>
               )}
-
               {activeState.status === "success" && activeState.message ? (
                 <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400" role="status">
                   {activeState.message}
                 </p>
               ) : null}
-
               {activeState.status === "error" && activeState.message ? (
                 <p className="text-sm font-medium text-destructive" role="alert">
                   {activeState.message}
                 </p>
               ) : null}
+              <div className="mt-4 text-center text-sm text-muted-foreground">{content.helper}</div>
             </CardContent>
           </Card>
         </div>
