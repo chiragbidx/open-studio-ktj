@@ -1,14 +1,14 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ChevronDown,
   Home,
-  Hammer,
-  Settings,
   Users,
+  Building2,
+  Contact2,
+  Settings,
 } from "lucide-react";
 import {
   Collapsible,
@@ -25,14 +25,11 @@ type NavItem = {
 
 const sections: { title: string; items: NavItem[] }[] = [
   {
-    title: "Platform",
+    title: "CRM",
     items: [
-      { label: "Overview", href: "/dashboard", icon: Home },
-      {
-        label: "Feature",
-        href: "/dashboard/feature",
-        icon: Hammer,
-      },
+      { label: "Overview", href: "/dashboard/overview", icon: Home },
+      { label: "Contacts", href: "/dashboard/contacts", icon: Contact2 },
+      { label: "Companies", href: "/dashboard/companies", icon: Building2 },
     ],
   },
   {
@@ -93,7 +90,9 @@ function NavSection({
   defaultOpen: boolean;
 }) {
   function checkActive(href: string) {
-    if (href === "/dashboard") return pathname === "/dashboard";
+    // Home matches /dashboard/overview, others match prefix
+    if (href === "/dashboard/overview")
+      return pathname === href || pathname === "/dashboard";
     if (href === "#") return false;
     return pathname.startsWith(href);
   }
