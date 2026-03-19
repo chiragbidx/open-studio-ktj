@@ -46,10 +46,10 @@ export default async function DashboardLayout({
           <div className="p-5">
             <div className="flex items-center gap-2.5">
               <div className="grid size-8 place-items-center rounded-lg bg-foreground text-background text-sm font-bold shadow-sm">
-                P
+                R
               </div>
               {/* Dashboard Text Logo */}
-              <span className="font-semibold tracking-tight">Panda</span>
+              <span className="font-semibold tracking-tight">RelateCRM</span>
             </div>
           </div>
 
@@ -79,7 +79,10 @@ export default async function DashboardLayout({
           </header>
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-6xl">{children}</div>
+            <div className="mx-auto max-w-6xl">
+              <h1 className="text-2xl font-bold mb-8">RelateCRM Dashboard</h1>
+              {children}
+            </div>
           </main>
         </div>
       </div>
