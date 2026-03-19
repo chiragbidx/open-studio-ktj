@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
-import { contacts, teams, teamMembers } from "@/lib/db/schema";
+import { contacts, teamMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import ContactsClient from "./client";
 
